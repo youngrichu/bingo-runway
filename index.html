@@ -471,7 +471,7 @@
     <div class="container">
         <div class="header">
             <div class="title">2025</div>
-            <div class="subtitle">BINGO</div>
+            <div class="subtitle">BLACKOUT</div>
         </div>
         
         <div class="bingo-grid" id="bingoGrid">
@@ -483,7 +483,7 @@
             <button class="btn btn-secondary" onclick="resetBoard()">Reset Board</button>
         </div>
         
-        <div class="status" id="status">Click squares to mark them!</div>
+        <div class="status" id="status">Mark all 25 squares to achieve BLACKOUT!</div>
     </div>
 
     <script>
@@ -606,27 +606,16 @@
         }
 
         function checkForWin() {
-            const winPatterns = [
-                // Rows
-                [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
-                // Columns
-                [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22], [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
-                // Diagonals
-                [0, 6, 12, 18, 24], [4, 8, 12, 16, 20]
-            ];
-
-            for (const pattern of winPatterns) {
-                if (pattern.every(index => markedCells.has(index))) {
-                    celebrateWin();
-                    return;
-                }
+            // Blackout mode: all 25 squares must be marked
+            if (markedCells.size === 25) {
+                celebrateWin();
             }
         }
 
         function celebrateWin() {
             gameWon = true;
             const status = document.getElementById('status');
-            status.innerHTML = '<div class="win-message">🎉 BINGO! You Win! 🎉</div>';
+            status.innerHTML = '<div class="win-message">🎉 BLACKOUT ACHIEVED! All 25 Goals Completed! 🎉</div>';
             
             // Add confetti effect
             createConfetti();
@@ -670,7 +659,7 @@
         function newGame() {
             markedCells.clear();
             gameWon = false;
-            document.getElementById('status').textContent = 'Click squares to mark them!';
+            document.getElementById('status').textContent = 'Mark all 25 squares to achieve BLACKOUT!';
             createGrid();
         }
 
@@ -678,7 +667,7 @@
             markedCells.clear();
             markedCells.add(12); // Keep free space marked
             gameWon = false;
-            document.getElementById('status').textContent = 'Click squares to mark them!';
+            document.getElementById('status').textContent = 'Mark all 25 squares to achieve BLACKOUT!';
             
             document.querySelectorAll('.bingo-cell').forEach((cell, index) => {
                 if (index === 12) {
