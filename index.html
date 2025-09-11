@@ -571,7 +571,10 @@
             const grid = document.getElementById('bingoGrid');
             grid.innerHTML = '';
             
-            generateBoard();
+            // Only generate new board if we don't have a loaded one
+            if (currentBoard.length === 0) {
+                generateBoard();
+            }
             
             currentBoard.forEach((activity, index) => {
                 const cell = document.createElement('div');
@@ -580,13 +583,26 @@
                 cell.dataset.index = index;
                 
                 if (index === 12) { // Free space
-                    cell.classList.add('free', 'marked');
-                    markedCells.add(12);
+                    cell.classList.add('free');
+                    if (!markedCells.has(12)) {
+                        markedCells.add(12);
+                    }
+                }
+                
+                // Apply marked state from loaded data
+                if (markedCells.has(index)) {
+                    cell.classList.add('marked');
                 }
                 
                 cell.addEventListener('click', () => toggleCell(index));
                 grid.appendChild(cell);
             });
+            
+            // Update status if game was already won
+            if (gameWon) {
+                const status = document.getElementById('status');
+                status.innerHTML = '<div class="win-message">🎉 BLACKOUT ACHIEVED! All 25 Goals Completed! 🎉</div>';
+            }
         }
 
         function toggleCell(index) {
@@ -602,6 +618,7 @@
                 cell.classList.add('marked');
             }
             
+            saveGameState();
             checkForWin();
         }
 
@@ -617,6 +634,7 @@
             const status = document.getElementById('status');
             status.innerHTML = '<div class="win-message">🎉 BLACKOUT ACHIEVED! All 25 Goals Completed! 🎉</div>';
             
+            saveGameState();
             // Add confetti effect
             createConfetti();
         }
@@ -656,11 +674,44 @@
             }, 400);
         }
 
+        /**
+         * Save current game state to localStorage
+         */
+        function saveGameState() {
+            const gameState = {
+                currentBoard: currentBoard,
+                markedCells: Array.from(markedCells),
+                gameWon: gameWon
+            };
+            localStorage.setItem('bingoGameState', JSON.stringify(gameState));
+        }
+
+        /**
+         * Load game state from localStorage
+         */
+        function loadGameState() {
+            const savedState = localStorage.getItem('bingoGameState');
+            if (savedState) {
+                try {
+                    const gameState = JSON.parse(savedState);
+                    currentBoard = gameState.currentBoard || [];
+                    markedCells = new Set(gameState.markedCells || []);
+                    gameWon = gameState.gameWon || false;
+                    return true;
+                } catch (error) {
+                    console.warn('Failed to load game state:', error);
+                    return false;
+                }
+            }
+            return false;
+        }
+
         function newGame() {
             markedCells.clear();
             gameWon = false;
             document.getElementById('status').textContent = 'Mark all 25 squares to achieve BLACKOUT!';
             createGrid();
+            saveGameState();
         }
 
         function resetBoard() {
@@ -676,11 +727,13 @@
                     cell.classList.remove('marked');
                 }
             });
+            saveGameState();
         }
 
         /* Initializations */
         createStars();
         initComets();
+        loadGameState();
         createGrid();
     </script>
 </body>
