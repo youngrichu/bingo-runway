@@ -487,13 +487,13 @@
     </div>
 
     <script>
-        // Bingo activities based on your image
+        // Bingo activities for the event
         const bingoActivities = [
-            "MUSICAL", "EDGE EXPERIMENT", "MOTOR SPORT FUN", "SELF CARE DAY (NO WORK)", "REN FAIRE",
-            "VOLUNTEER MORE", "PASTA FROM SCRATCH", "FIND LOVE", "MAKE AFTER ART", "FAMILY BALANCE",
-            "LEARN DANCE", "CAMPING", "FREE SPACE", "TRAVEL", "30 EVENTS",
-            "POP UP DINNER", "TRY SHROOMS", "MOVE OUT", "COMEDY SHOW", "ARCHERY",
-            "MAKE A SCULPTURE", "RETREAT", "NEW DRAGON", "PARK PICNICS", "DESIGN BOARD GAME"
+            "Jamica rolls her eyes", "What do you do?", "Technical Glitch", "Last Minute Ask", "Spilled Drink",
+            "Drama", "I love the website", "Do you have a business card?", "Reparative Capital", "Meet Jessica",
+            "Meet Entrepreneur", "Try Something New", "RUNWAY LAUNCH PARTY", "Text Habtamu an Update", "Megan / Person Trips",
+            "Wardrobe Malfunction", "Dancing", "Compliment Fashionable Outfits", "Volume Issue", "Spot Some Cuties",
+            "Stress", "Stoned", "Buzzed", "Jamica Cries", "Late Attendees"
         ];
 
         let currentBoard = [];
@@ -560,10 +560,13 @@
         }
 
         function generateBoard() {
-            const shuffled = shuffleArray(bingoActivities);
-            currentBoard = shuffled.slice(0, 25);
-            // Ensure center is free space
-            currentBoard[12] = "FREE SPACE";
+            // Remove "RUNWAY LAUNCH PARTY" from activities before shuffling
+            const activitiesWithoutCenter = bingoActivities.filter(activity => activity !== "RUNWAY LAUNCH PARTY");
+            const shuffled = shuffleArray(activitiesWithoutCenter);
+            // Take first 24 activities and create board
+            currentBoard = shuffled.slice(0, 24);
+            // Insert "RUNWAY LAUNCH PARTY" at position 12 (center)
+            currentBoard.splice(12, 0, "RUNWAY LAUNCH PARTY");
             return currentBoard;
         }
 
@@ -582,7 +585,7 @@
                 cell.textContent = activity;
                 cell.dataset.index = index;
                 
-                if (index === 12) { // Free space
+                if (index === 12) { // RUNWAY LAUNCH PARTY center box
                     cell.classList.add('free');
                     if (!markedCells.has(12)) {
                         markedCells.add(12);
@@ -679,6 +682,7 @@
          */
         function saveGameState() {
             const gameState = {
+                version: 'runway-2025', // Version identifier for current activities
                 currentBoard: currentBoard,
                 markedCells: Array.from(markedCells),
                 gameWon: gameWon
@@ -691,15 +695,26 @@
          */
         function loadGameState() {
             const savedState = localStorage.getItem('bingoGameState');
+            const currentVersion = 'runway-2025'; // Version identifier for current activities
+            
             if (savedState) {
                 try {
                     const gameState = JSON.parse(savedState);
+                    
+                    // Check if saved version matches current version
+                    if (gameState.version !== currentVersion) {
+                        console.log('Activities updated, clearing old game state');
+                        localStorage.removeItem('bingoGameState');
+                        return false;
+                    }
+                    
                     currentBoard = gameState.currentBoard || [];
                     markedCells = new Set(gameState.markedCells || []);
                     gameWon = gameState.gameWon || false;
                     return true;
                 } catch (error) {
                     console.warn('Failed to load game state:', error);
+                    localStorage.removeItem('bingoGameState');
                     return false;
                 }
             }
@@ -716,7 +731,7 @@
 
         function resetBoard() {
             markedCells.clear();
-            markedCells.add(12); // Keep free space marked
+            markedCells.add(12); // Keep RUNWAY LAUNCH PARTY marked
             gameWon = false;
             document.getElementById('status').textContent = 'Mark all 25 squares to achieve BLACKOUT!';
             
@@ -727,6 +742,7 @@
                     cell.classList.remove('marked');
                 }
             });
+            
             saveGameState();
         }
 
